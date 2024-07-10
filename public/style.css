@@ -150,7 +150,7 @@ body {
   position: absolute;
   top: 10px;
   height: 478px;
-  width: calc(100% - 350px);
+  width: calc(100% - 370px);
   left: 340px;
   text-align: left;
   background-color: #000;
@@ -166,7 +166,7 @@ body {
   position: absolute;
   top: 520px;
   height: 400px;
-  width: calc(100% - 20px);
+  width: calc(100% - 40px);
   left: 10px;
   text-align: left;
   background-color: #000;
