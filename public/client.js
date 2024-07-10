@@ -146,42 +146,62 @@ function startWebsocket(){
 
   socket.addEventListener("message", (event) => {
     const data = JSON.parse(event.data);
-    if (data && data.channel.alternatives[0].transcript !== "") {
+    if(data){
       let interim_result = document.getElementById('interim_result');
       let log = document.getElementById('log');
-        if(data.is_final){
-            is_finals.push(data.channel.alternatives[0].transcript)
-            if(data.speech_final){
-                if(interim_result){
-                    interim_result.parentNode.removeChild(interim_result);
-                }
-                // Remove the is_final=true
-                let isFinals = document.getElementsByClassName('is_final');
-                Array.from(isFinals).forEach((isFinal)=>{
-                    isFinal.parentNode.removeChild(isFinal);
-                })
-                // Add the speech_final
-                captions.innerHTML += `<span class="speech_final">${is_finals.join(' ')}</span>`;
+      if (data.type == "Results" && data.channel.alternatives[0].transcript !== "") {
+          if(data.is_final){
+              is_finals.push(data.channel.alternatives[0].transcript)
+              if(data.speech_final){
+                  if(interim_result){
+                      interim_result.parentNode.removeChild(interim_result);
+                  }
+                  // Remove the is_final=true
+                  let isFinals = document.getElementsByClassName('is_final');
+                  Array.from(isFinals).forEach((isFinal)=>{
+                      isFinal.parentNode.removeChild(isFinal);
+                  })
+                  // Add the speech_final
+                  captions.innerHTML += `<span class="speech_final">${is_finals.join(' ')}</span>`;
 
-                log.innerHTML += `[Speech Final] ${is_finals.join(' ')}<br>`;
+                  log.innerHTML += `[Speech Final] ${is_finals.join(' ')}<br>`;
 
-                is_finals = [];
-            } else {
-                if(interim_result){
-                    interim_result.parentNode.removeChild(interim_result);
-                }
-                // Add the is_final
-                captions.innerHTML += `<span class="is_final">${data.channel.alternatives[0].transcript}</span>`;
-                log.innerHTML += `&nbsp;&nbsp;[Is Final] ${data.channel.alternatives[0].transcript}<br>`;
-            }
-        } else {
-            if(!interim_result){
-                captions.innerHTML += `<span id="interim_result">${data.channel.alternatives[0].transcript}</span>`;
-            } else {
-                interim_result.innerHTML = `<span id="interim_result">${data.channel.alternatives[0].transcript}</span>`;
-            }
-            log.innerHTML += `&nbsp;&nbsp;&nbsp;&nbsp;[Interim Result] ${data.channel.alternatives[0].transcript}<br>`;
+                  is_finals = [];
+              } else {
+                  if(interim_result){
+                      interim_result.parentNode.removeChild(interim_result);
+                  }
+                  // Add the is_final
+                  captions.innerHTML += `<span class="is_final">${data.channel.alternatives[0].transcript}</span>`;
+                  log.innerHTML += `&nbsp;&nbsp;[Is Final] ${data.channel.alternatives[0].transcript}<br>`;
+              }
+          } else {
+              if(!interim_result){
+                  captions.innerHTML += `<span id="interim_result">${data.channel.alternatives[0].transcript}</span>`;
+              } else {
+                  interim_result.innerHTML = `<span id="interim_result">${data.channel.alternatives[0].transcript}</span>`;
+              }
+              log.innerHTML += `&nbsp;&nbsp;&nbsp;&nbsp;[Interim Result] ${data.channel.alternatives[0].transcript}<br>`;
+          }
+      } else if (data.type == 'UtteranceEnd') {
+        if(is_finals.length > 0){
+          console.log(`[UtteranceEnd] ${is_finals.join(' ')}`);
+          if(interim_result){
+            interim_result.parentNode.removeChild(interim_result);
+          }
+          // Remove the is_final=true
+          let isFinals = document.getElementsByClassName('is_final');
+          Array.from(isFinals).forEach((isFinal)=>{
+              isFinal.parentNode.removeChild(isFinal);
+          })
+          // Add the speech_final
+          captions.innerHTML += `<span class="speech_final">${is_finals.join(' ')}</span>`;
+
+          log.innerHTML += `[Utterance End] ${is_finals.join(' ')}<br>`;
+
+          is_finals = [];
         }
+      }
     }
   });
 
