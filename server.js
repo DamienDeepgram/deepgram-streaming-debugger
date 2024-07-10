@@ -48,6 +48,12 @@ const setupDeepgram = (ws, parameters) => {
         ws.send(JSON.stringify(data));
       });
 
+      deepgram.on(LiveTranscriptionEvents.UtteranceEnd, (data) => {
+        console.log("deepgram: utterance end received");
+        console.log("socket: utterance end sent to client");
+        ws.send(JSON.stringify(data));
+      });
+
       deepgram.addListener(LiveTranscriptionEvents.Close, async () => {
         console.log("deepgram: disconnected");
         clearInterval(keepAlive);
