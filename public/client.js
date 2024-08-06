@@ -63,20 +63,26 @@ function setValue(el, val){
 
 function getSettings(){
   return {
+    model: getValue('model'),
+    language: getValue('language'),
     endpointing: getValue('endpointing'),
-    interim_results: getValue('interim_results'),
+    interim_results: getValue('interim_results') == "false" ? false : true,
     utterance_end_ms: getValue('utterance_end_ms'),
-    no_delay: getValue('no_delay'),
-    smart_format: getValue('smart_format'),
+    no_delay: getValue('no_delay') == "false" ? false : true,
+    smart_format: getValue('smart_format') == "false" ? false : true,
+    diarize: getValue('diarize') == "false" ? false : true,
   };
 }
 
 function updateSettingsVals(settings){
+  setValue('model', settings.model);
+  setValue('language', settings.language);
   setValue('endpointing', settings.endpointing);
   setValue('interim_results', settings.interim_results);
   setValue('utterance_end_ms', settings.utterance_end_ms);
   setValue('no_delay', settings.no_delay);
   setValue('smart_format', settings.smart_format);
+  setValue('diarize', settings.diarize);
 }
 
 async function start(socket) {
@@ -118,7 +124,8 @@ async function updateSettings(){
 
 function startWebsocket(){
   let settings = getSettings();
-  if(settings.interim_results == 'false'){
+  console.log(settings);
+  if(settings.interim_results == false){
     settings.utterance_end_ms = '';
   }
   if(parseInt(settings.utterance_end_ms) < 1000){
@@ -132,7 +139,9 @@ function startWebsocket(){
 
   let params = jsonToUrlParams(settings);
   //endpointing=300&interim_results=true&utterance_end_ms=1000&&no_delay=true&smart_format=true
-  socket = new WebSocket("ws://localhost:3000?"+params);
+  socket = new WebSocket("wss://deepgram-streaming-debugger.glitch.me?"+params);
+  // socket = new WebSocket("ws://localhost:3000?"+params);
+  
 
   socket.addEventListener("open", async () => {
     connected = true;
@@ -151,7 +160,31 @@ function startWebsocket(){
       let log = document.getElementById('log');
       if (data.type == "Results" && data.channel.alternatives[0].transcript !== "") {
           if(data.is_final){
-              is_finals.push(data.channel.alternatives[0].transcript)
+              is_finals.push(data.channel.alternatives[0].transcript);
+              
+              if(settings.diarize){
+                let speaker_phrases = {}
+
+                // Populate the dictionary with phrases for each speaker
+                data.channel.alternatives[0].words.forEach((word)=>{
+                  let speaker = word['speaker']
+                  if (!speaker_phrases[speaker]){
+                      speaker_phrases[speaker] = word['word'];
+                  }
+                  else{
+                      // Add a space before the next word for the same speaker
+                      speaker_phrases[speaker] += " " + word['word']
+                  }
+                });
+
+                // Print the phrases for each speaker
+                Object.keys(speaker_phrases).forEach((speaker)=>{
+                    let phrase = speaker_phrases[speaker]
+                    console.log(`Speaker ${speaker}: ${phrase}`)   
+                    log.innerHTML += `Speaker ${speaker}: ${phrase}<br>`;
+                })   
+              }
+            
               if(data.speech_final){
                   if(interim_result){
                       interim_result.parentNode.removeChild(interim_result);

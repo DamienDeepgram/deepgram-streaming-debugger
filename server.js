@@ -4,7 +4,9 @@ const WebSocket = require("ws");
 const { createClient, LiveTranscriptionEvents } = require("@deepgram/sdk");
 const url = require("url");
 const dotenv = require("dotenv");
-dotenv.config();
+dotenv.config(); 
+const { Blob } = require('blob-polyfill');
+global.Blob = Blob;
 
 const app = express();
 const server = http.createServer(app);
@@ -28,6 +30,10 @@ const setupDeepgram = (ws, parameters) => {
   if (!parameters.model) {
     parameters.model = "nova-2-general";
   }
+  if(parameters.utterance_end_ms == ""){
+      delete parameters.utterance_end_ms;
+  }
+  console.log('parameters:', parameters);
   let deepgram = null;
   try{
     deepgram = deepgramClient.listen.live(parameters);
@@ -42,15 +48,15 @@ const setupDeepgram = (ws, parameters) => {
       console.log("deepgram: connected");
 
       deepgram.addListener(LiveTranscriptionEvents.Transcript, (data) => {
-        console.log("deepgram: packet received");
-        console.log("deepgram: transcript received");
-        console.log("socket: transcript sent to client");
+        // console.log("deepgram: packet received");
+        // console.log("deepgram: transcript received");
+        // console.log("socket: transcript sent to client");
         ws.send(JSON.stringify(data));
       });
 
       deepgram.on(LiveTranscriptionEvents.UtteranceEnd, (data) => {
-        console.log("deepgram: utterance end received");
-        console.log("socket: utterance end sent to client");
+        // console.log("deepgram: utterance end received");
+        // console.log("socket: utterance end sent to client");
         ws.send(JSON.stringify(data));
       });
 
@@ -103,7 +109,7 @@ wss.on("connection", (ws, req) => {
           console.log("socket: data couldn't be sent to deepgram");
           console.log("socket: retrying connection to deepgram");
           /* Attempt to reopen the Deepgram connection */
-          // deepgram.finish();
+          // deepgram.finish(); 
           // deepgram.removeAllListeners();
           // deepgram = setupDeepgram(socket);
         } else {
