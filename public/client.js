@@ -158,7 +158,9 @@ function startWebsocket(){
     if(data){
       let interim_result = document.getElementById('interim_result');
       let log = document.getElementById('log');
-      if (data.type == "Results" && data.channel.alternatives[0].transcript !== "") {
+      if (data.type == "Results" && data.channel.alternatives[0].transcript !== "") {  
+          let duration = (data.start+data.duration).toFixed(2);
+          let start = data.start.toFixed(2);
           if(data.is_final){
               is_finals.push(data.channel.alternatives[0].transcript);
               
@@ -184,7 +186,6 @@ function startWebsocket(){
                     log.innerHTML += `Speaker ${speaker}: ${phrase}<br>`;
                 })   
               }
-            
               if(data.speech_final){
                   if(interim_result){
                       interim_result.parentNode.removeChild(interim_result);
@@ -197,16 +198,17 @@ function startWebsocket(){
                   // Add the speech_final
                   captions.innerHTML += `<span class="speech_final">${is_finals.join(' ')}</span>`;
 
-                  log.innerHTML += `[Speech Final] ${is_finals.join(' ')}<br>`;
+                  log.innerHTML += `${start}-${duration} [Speech Final] ${is_finals.join(' ')}<br>`;
 
                   is_finals = [];
               } else {
                   if(interim_result){
                       interim_result.parentNode.removeChild(interim_result);
                   }
+                  console.log('data', data);
                   // Add the is_final
                   captions.innerHTML += `<span class="is_final">${data.channel.alternatives[0].transcript}</span>`;
-                  log.innerHTML += `&nbsp;&nbsp;[Is Final] ${data.channel.alternatives[0].transcript}<br>`;
+                  log.innerHTML += `${start}-${duration} &nbsp;&nbsp;[Is Final] ${data.channel.alternatives[0].transcript}<br>`;
               }
           } else {
               if(!interim_result){
@@ -214,7 +216,7 @@ function startWebsocket(){
               } else {
                   interim_result.innerHTML = `<span id="interim_result">${data.channel.alternatives[0].transcript}</span>`;
               }
-              log.innerHTML += `&nbsp;&nbsp;&nbsp;&nbsp;[Interim Result] ${data.channel.alternatives[0].transcript}<br>`;
+              log.innerHTML += `${start}-${duration} &nbsp;&nbsp;&nbsp;&nbsp;[Interim Result] ${data.channel.alternatives[0].transcript}<br>`;
           }
       } else if (data.type == 'UtteranceEnd') {
         if(is_finals.length > 0){
