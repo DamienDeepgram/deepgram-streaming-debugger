@@ -4,6 +4,7 @@ let is_finals = [];
 let connected = false;
 let socket = null;
 let microphone;
+let fileId = null;
 async function getMicrophone() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -125,6 +126,9 @@ async function updateSettings(){
 function startWebsocket(){
   let settings = getSettings();
   console.log(settings);
+  if(fileId != null){
+    settings.fileId = fileId;
+  }
   if(settings.interim_results == false){
     settings.utterance_end_ms = '';
   }
@@ -139,8 +143,8 @@ function startWebsocket(){
 
   let params = jsonToUrlParams(settings);
   //endpointing=300&interim_results=true&utterance_end_ms=1000&&no_delay=true&smart_format=true
-  socket = new WebSocket("wss://deepgram-streaming-debugger.glitch.me?"+params);
-  // socket = new WebSocket("ws://localhost:3000?"+params);
+  // socket = new WebSocket("wss://deepgram-streaming-debugger.glitch.me?"+params);
+  socket = new WebSocket("ws://localhost:3000?"+params);
   
 
   socket.addEventListener("open", async () => {
@@ -245,6 +249,100 @@ function startWebsocket(){
   });
 }
 
-window.addEventListener("load", () => {
+
+
+  // Open a WebSocket connection to listen for Deepgram transcriptions
+  function openWebSocket(fileId) {
+    websocket = new WebSocket('ws://localhost:3000');
+
+    websocket.onopen = function () {
+        console.log('WebSocket connection established.');
+    };
+
+    websocket.onmessage = function (event) {
+        console.log('Transcription:', event.data);
+        transcriptionOutput.textContent += event.data + '\n'; // Append transcription result
+    };
+
+    websocket.onerror = function (error) {
+        console.error('WebSocket error:', error);
+    };
+
+    websocket.onclose = function () {
+        console.log('WebSocket connection closed.');
+    };
+}
+
+function setupTabs(){
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabButtons.forEach(button => {
+      button.addEventListener('click', (el) => {
+          if(el.id != 'tab2'){
+            fileId = null;
+          }
+          const targetTab = button.getAttribute('data-tab');
+
+          // Remove active class from all buttons and contents
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+
+          // Add active class to the clicked button and corresponding content
+          button.classList.add('active');
+          document.getElementById(targetTab).classList.add('active');
+      });
+  });
+}
+
+function setupFileUpload(){
+  const form = document.getElementById('uploadForm');
+  const transcriptionOutput = document.getElementById('transcriptionOutput');
+  let websocket;
+
+  form.addEventListener('submit', (event) => {
+      event.preventDefault(); // Prevent the default form submission behavior
+
+      const fileInput = document.getElementById('audioFile');
+      const file = fileInput.files[0];
+      if (!file) {
+          alert('Please select an audio file.');
+          return;
+      }
+
+      // Create a FormData object to hold the file
+      const formData = new FormData();
+      formData.append('audio', file);
+
+      // Upload the file to the server via a POST request
+      fetch('/upload', {
+          method: 'POST',
+          body: formData,
+      })
+      .then(response => response.json())
+      .then(response => {
+          if (response.fileId) {
+              // Once the file is uploaded, start listening for transcription WebSocket messages
+              fileId = response.fileId;
+              startWebsocket();
+          } else {
+              alert('Failed to upload the file.');
+          }
+      })
+      .catch(error => {
+          console.error('Error during upload:', error);
+          alert('Error uploading the file.');
+      });
+  });
+
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // Handle the file upload form
+  
+  setupTabs();
+
+  setupFileUpload();
   
 });
