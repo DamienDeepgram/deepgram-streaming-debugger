@@ -9,7 +9,7 @@ const path = require('path');
 const dotenv = require("dotenv");
 dotenv.config(); 
 const { Blob } = require('blob-polyfill');
-global.Blob = Blob;
+global.Blob = Blob; 
 const { v4: uuidv4 } = require('uuid');
 const ffmpeg = require('fluent-ffmpeg');
 
@@ -56,7 +56,15 @@ function urlParamsToJson(url) {
   const jsonObject = {};
 
   for (const [key, value] of params.entries()) {
+    if(key == 'params'){
+      console.log('params:', value);
+      let additionalParams = new URLSearchParams(value);
+      for (const [key, value] of additionalParams.entries()) {
+        jsonObject[key] = value;
+      }
+    }else {
       jsonObject[key] = value;
+    }
   }
 
   return jsonObject;
@@ -101,7 +109,7 @@ const setupDeepgram = (ws, parameters) => {
 
     if (keepAlive) clearInterval(keepAlive);
     keepAlive = setInterval(() => {
-      console.log("deepgram: keepalive");
+      // console.log("deepgram: keepalive");
       deepgram.keepAlive();
     }, 10 * 1000);
 
@@ -109,7 +117,7 @@ const setupDeepgram = (ws, parameters) => {
       console.log("deepgram: connected");
       connected = true;
 
-      if(buffer[parameters.fileId].length > 0){
+      if(buffer[parameters.fileId] && buffer[parameters.fileId].length > 0){
         console.log("Playing buffer");
         replayBuffer(parameters.fileId);
       }
@@ -228,10 +236,10 @@ wss.on("connection", (ws, req) => {
         console.log("socket: using mic data");
 
         ws.on("message", (message) => {
-          console.log("socket: client data received");
+          // console.log("socket: client data received");
 
           if (deepgram.getReadyState() === 1 /* OPEN */) {
-            console.log("socket: data sent to deepgram");
+            // console.log("socket: data sent to deepgram");
             deepgram.send(message);
           } else if (deepgram.getReadyState() >= 2 /* 2 = CLOSING, 3 = CLOSED */) {
             console.log("socket: data couldn't be sent to deepgram");
@@ -249,6 +257,7 @@ wss.on("connection", (ws, req) => {
       ws.on("close", () => {
         console.log("socket: client disconnected");
         let filePath = filePaths[parameters.fileId];
+        try{
         fs.unlink(filePath, (err) => {
           if (err) {
             console.error('Error deleting file:', err);
@@ -256,6 +265,9 @@ wss.on("connection", (ws, req) => {
             console.log('File successfully deleted:', filePath);
           }
         });
+        } catch(e){
+          // console.log(e);
+        }
         delete filePaths[parameters.fileId];
         delete buffer[parameters.fileId];
         deepgram.finish();

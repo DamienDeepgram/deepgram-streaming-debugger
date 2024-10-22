@@ -16,26 +16,31 @@
     <div class="settings" id="settings">
       <h2>Streaming Settings</h2>
       <div>Status: <span class="disconnected" id="status">Disconnected</span></div>
+      
       <label>model:</label><input id="model" type="text" value="nova-2-general">
+      
       <label>language:</label><input id="language" type="text" value="en">
+      
       <label>smart_format:</label><select id="smart_format">
         <option selected value="true">true</option>
         <option value="false">false</option>
         </select>
-      <label>diarize:</label><select id="diarize" type="text" value="false">
-        <option value="true">true</option>
-        <option selected value="false">false</option>
-        </select>
+      
       <label>endpointing:</label><input id="endpointing" type="text" value="300">
+      
       <label>utterance_end_ms:</label><input id="utterance_end_ms" type="text" value="1000">
+      
       <label>interim_results:</label><select id="interim_results">
         <option selected value="true">true</option>
         <option value="false">false</option>
         </select>
+      
       <label>no_delay:</label><select id="no_delay">
         <option selected value="true">true</option>
         <option value="false">false</option>
         </select>
+      
+      <label>additional params:</label><input id="params" type="text" value="">
         <div class="tab-container">
           <!-- Tab headers -->
           <div class="tabs">
@@ -79,7 +84,7 @@
             </div>
           </div>
           <div class="tab-content" id="tab2">
-            <b>File to stream (.wav & .mp3)</b>
+            <b>File to stream (.wav &amp; .mp3)</b>
             <br>
             <form id="uploadForm" enctype="multipart/form-data">
                 <input type="file" id="audioFile" name="audioFile" accept=".wav, .mp3" required>

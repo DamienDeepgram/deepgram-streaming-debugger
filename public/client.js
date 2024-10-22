@@ -5,6 +5,41 @@ let connected = false;
 let socket = null;
 let microphone;
 let fileId = null;
+
+function updateUrlWithQueryParams(params){
+    const searchParams = new URLSearchParams(params);
+    const queryString = searchParams.toString();
+  console.log('queryString', queryString)
+    if (history.pushState) {
+        var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + queryString;
+        window.history.pushState({path:newurl},'',newurl);
+    }
+}
+
+function loadUrlParams(){
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+
+    // Strings
+    const model = urlParams.get('model') ? urlParams.get('model') : '';
+    const language = urlParams.get('language') ? urlParams.get('language') : '';
+    const endpointing = urlParams.get('endpointing') ? urlParams.get('endpointing') : '';
+    const interim_results = urlParams.get('interim_results') ? urlParams.get('interim_results') : '';
+    const utterance_end_ms = urlParams.get('utterance_end_ms') ? urlParams.get('utterance_end_ms') : '';
+    const no_delay = urlParams.get('no_delay') ? urlParams.get('no_delay') : '';
+    const smart_format = urlParams.get('smart_format') ? urlParams.get('smart_format') : '';
+    const params = urlParams.get('params') ? urlParams.get('params') : '';
+  
+    setValue('model', model);
+    setValue('language', language);
+    setValue('endpointing', endpointing);
+    setValue('interim_results', interim_results);
+    setValue('utterance_end_ms', utterance_end_ms);
+    setValue('no_delay', no_delay);
+    setValue('smart_format', smart_format);
+    setValue('params', params);
+}
+
 async function getMicrophone() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -71,7 +106,7 @@ function getSettings(){
     utterance_end_ms: getValue('utterance_end_ms'),
     no_delay: getValue('no_delay') == "false" ? false : true,
     smart_format: getValue('smart_format') == "false" ? false : true,
-    diarize: getValue('diarize') == "false" ? false : true,
+    params: getValue('params'),
   };
 }
 
@@ -83,7 +118,7 @@ function updateSettingsVals(settings){
   setValue('utterance_end_ms', settings.utterance_end_ms);
   setValue('no_delay', settings.no_delay);
   setValue('smart_format', settings.smart_format);
-  setValue('diarize', settings.diarize);
+  setValue('params', settings.params);
 }
 
 async function start(socket) {
@@ -142,6 +177,8 @@ function startWebsocket(){
   updateSettingsVals(settings);
 
   let params = jsonToUrlParams(settings);
+  
+  updateUrlWithQueryParams(params);
   //endpointing=300&interim_results=true&utterance_end_ms=1000&&no_delay=true&smart_format=true
   // socket = new WebSocket("wss://deepgram-streaming-debugger.glitch.me?"+params);
   socket = new WebSocket("ws://localhost:3000?"+params);
@@ -344,5 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTabs();
 
   setupFileUpload();
+  
+  loadUrlParams();
   
 });
