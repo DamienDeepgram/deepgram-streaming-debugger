@@ -30,14 +30,22 @@ function loadUrlParams(){
     const smart_format = urlParams.get('smart_format') ? urlParams.get('smart_format') : '';
     const params = urlParams.get('params') ? urlParams.get('params') : '';
   
-    setValue('model', model);
-    setValue('language', language);
-    setValue('endpointing', endpointing);
-    setValue('interim_results', interim_results);
-    setValue('utterance_end_ms', utterance_end_ms);
-    setValue('no_delay', no_delay);
-    setValue('smart_format', smart_format);
-    setValue('params', params);
+    if(model)
+      setValue('model', model);
+    if(language)
+      setValue('language', language);
+    if(endpointing)
+      setValue('endpointing', endpointing);
+    if(interim_results)
+      setValue('interim_results', interim_results);
+    if(utterance_end_ms)
+      setValue('utterance_end_ms', utterance_end_ms);
+    if(no_delay)
+      setValue('no_delay', no_delay);
+    if(smart_format)
+      setValue('smart_format', smart_format);
+    if(params)
+      setValue('params', params);
 }
 
 async function getMicrophone() {
