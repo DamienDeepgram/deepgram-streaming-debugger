@@ -1,3 +1,3 @@
 # deepgram-streaming-debugger
 
-[Live Demo](https://deepgram-streaming-debugger.glitch.me/)
+See [public demos](https://github.com/deepgram/public_demos) for hosting information!

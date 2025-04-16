@@ -187,9 +187,7 @@ function startWebsocket(){
   let params = jsonToUrlParams(settings);
   
   updateUrlWithQueryParams(params);
-  //endpointing=300&interim_results=true&utterance_end_ms=1000&&no_delay=true&smart_format=true
-  // socket = new WebSocket("wss://deepgram-streaming-debugger.glitch.me?"+params);
-  socket = new WebSocket("ws://localhost:3000?"+params);
+  socket = new WebSocket("wss://deepgram-streaming-debugger.fly.dev?"+params);
   
 
   socket.addEventListener("open", async () => {
